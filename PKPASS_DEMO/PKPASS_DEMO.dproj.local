@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.105,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.190,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.690,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.662,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.311,C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Main.dfm=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.633,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.786,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.782,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.630,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.402,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.012,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\WebModuleUnit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.766,D:\Delphi\__Apple\___PKPASS\PKPASS_DEMO\PKPASS_DEMO.dproj=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Project1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.184,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\IWTestCase1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.311,C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Main.pas=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.136,=C:\Users\Андрей\Documents\Embarcadero\Studio\Projects\FormUnit1.pas</Transaction>
+  </Transactions>
+</BorlandProject>
