@@ -142,8 +142,8 @@ type
     procedure B_CONVERT_PEM_To_PKCS12Click(Sender: TObject);
     procedure B_CREATE_CERT_REQUESTClick(Sender: TObject);
   private
-   function SelectDir(Caption :String):String;
-   function SelectFile(Title, Filter :String):String;
+   function SelectDir(Const Caption :String):String;
+   function SelectFile(Const Title, Filter :String):String;
     { Private declarations }
   public
     { Public declarations }
@@ -533,7 +533,7 @@ E_WWDR.Text:= SelectFile('WWDR (pem)', 'Certificate files (pem)|*.pem|All files|
 end;
 
 
-function TFMain.SelectDir(Caption :String):String;
+function TFMain.SelectDir(Const Caption :String):String;
 var
   Dir :String;
 begin
@@ -542,7 +542,7 @@ if Length(Dir) = 0 then Exit;
 Result:=Dir +'\';
 end;
 
-function TFMain.SelectFile(Title, Filter :String):String;
+function TFMain.SelectFile(Const Title, Filter :String):String;
 var
 Dialog: TOpenDialog;
 begin
