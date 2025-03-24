@@ -335,7 +335,7 @@ Messagedlg('Certificate PEM must be filled.', mterror, [mbNo],0);
 Exit;
 end;
 
-ZeroMemory(@CERT_ATTRIBUTES, SizeOf(CERT_ATTRIBUTES));
+ZeroMemory(@CERT_ATTRIBUTES, SizeOf(TCERT_ATTRIBUTES));
 LoadFile(E_CERT_PEM.Text, PEM);
 
 if not EXECUTE_GET_ATTRIBUTES_PEM(@PEM, @CERT_ATTRIBUTES, ErrorBuf) then
@@ -369,7 +369,7 @@ Exit;
 end;
 
 New(PKCS12);
-ZeroMemory(@CERT_ATTRIBUTES, SizeOf(CERT_ATTRIBUTES));
+ZeroMemory(@CERT_ATTRIBUTES, SizeOf(TCERT_ATTRIBUTES));
 
 PKCS12.Password:=PAnsiChar(Utf8Encode(E_Password1.Text));
 LoadFile(E_Certificate_PKCS12.Text, PKCS12.Certificate);
