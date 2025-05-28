@@ -162,8 +162,7 @@ uses U_PKPASS;
 procedure TFMain.B_CREATE_APNClick(Sender: TObject);
 var
 PKCS12 :PPKCS12;
-APN :Pointer;
-APN_LEN :NativeInt;
+APN :TBuffer;
 ErrorBuf: PChar;
 begin
 TRY
@@ -177,13 +176,13 @@ TRY
     PKCS12.Password:=PAnsiChar(Utf8Encode(E_Password1.Text));
     LoadFile(E_Certificate_PKCS12.Text, PKCS12.Certificate);
 
-    if not EXECUTE_CREATE_APN(PKCS12, APN, APN_LEN, ErrorBuf) then
+    if not EXECUTE_CREATE_APN(PKCS12, APN, ErrorBuf) then
       Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
     Else
-      SaveFile(E_Save_APN.Text +'APN.PEM', APN, APN_LEN);
+      SaveFile(E_Save_APN.Text +'APN.PEM', APN.Buf, APN.Size);
 
   FINALLY
-   Pointer_Free(APN, APN_LEN);
+   Pointer_Free(APN.Buf, APN.Size);
    TBuffer_Free(PKCS12.Certificate);
    Dispose(PKCS12);
   END;
@@ -197,8 +196,7 @@ end;
 procedure TFMain.B_CREATE_CERT_REQUESTClick(Sender: TObject);
 var
 CREATE_REQUEST :PCREATE_REQUEST;
-P_REQUEST, P_PKEY :Pointer;
-REQUEST_LEN, PKEY_LEN :NativeInt;
+Var REQUEST, PKEY :TBuffer;
 ErrorBuf: PChar;
 begin
 TRY
@@ -215,16 +213,16 @@ TRY
     CREATE_REQUEST.RSA_BITS    :=CB_RSA_BITS.ItemIndex;
     CREATE_REQUEST.DIGEST_ALG  :=CB_DIGEST_ALG.ItemIndex;
 
-    if not EXECUTE_CREATE_CERT_REQUEST(CREATE_REQUEST, P_REQUEST, P_PKEY, REQUEST_LEN, PKEY_LEN, ErrorBuf) then
+    if not EXECUTE_CREATE_CERT_REQUEST(CREATE_REQUEST, REQUEST, PKEY, ErrorBuf) then
       Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
     Else begin
-      SaveFile(ExtractFilePath(ParamStr(0)) +'REQUEST.PEM',    P_REQUEST, REQUEST_LEN);
-      SaveFile(ExtractFilePath(ParamStr(0)) +'PRIVATEKEY.PEM', P_PKEY,    PKEY_LEN);
+      SaveFile(ExtractFilePath(ParamStr(0)) +'REQUEST.PEM',    REQUEST.Buf, REQUEST.Size);
+      SaveFile(ExtractFilePath(ParamStr(0)) +'PRIVATEKEY.PEM', PKEY.Buf,    PKEY.Size);
     end;
 
   FINALLY
-   Pointer_Free(P_REQUEST, REQUEST_LEN);
-   Pointer_Free(P_PKEY,    PKEY_LEN);
+   Pointer_Free(REQUEST.Buf, REQUEST.Size);
+   Pointer_Free(PKEY.Buf,    PKEY.Size);
    Dispose(CREATE_REQUEST);
   END;
 
@@ -237,8 +235,7 @@ end;
 procedure TFMain.B_CREATE_PKPASSClick(Sender: TObject);
 var
 CREATE_PKPASS :PCREATE_PKPASS;
-PKPASS :Pointer;
-PKPASS_LEN :NativeInt;
+PKPASS :TBuffer;
 ErrorBuf: PChar;
 begin
 TRY
@@ -272,14 +269,14 @@ TRY
     LoadFile(E_thumbnail2x.Text,  CREATE_PKPASS.thumbnail2x);
 
 
-    if not EXECUTE_CREATE_PKPASS(CREATE_PKPASS, PKPASS, PKPASS_LEN, ErrorBuf) then
+    if not EXECUTE_CREATE_PKPASS(CREATE_PKPASS, PKPASS, ErrorBuf) then
      Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
     Else
-     SaveFile(ExtractFilePath(ParamStr(0)) +'PKPASS_DEMO.pkpass', PKPASS, PKPASS_LEN);
+     SaveFile(ExtractFilePath(ParamStr(0)) +'PKPASS_DEMO.pkpass', PKPASS.Buf, PKPASS.Size);
 
 
   FINALLY
-    Pointer_Free(PKPASS, PKPASS_LEN);
+    Pointer_Free(PKPASS.Buf, PKPASS.Size);
     TBuffer_Free(CREATE_PKPASS.Pass_Json);
     TBuffer_Free(CREATE_PKPASS.Certificate_PKCS12);
     TBuffer_Free(CREATE_PKPASS.Certificate_WWDR);
@@ -306,8 +303,7 @@ end;
 procedure TFMain.B_CONVERT_PEM_To_PKCS12Click(Sender: TObject);
 var
 PEM_To_PKCS12 :PPEM_To_PKCS12;
-P_PKCS12 :Pointer;
-PKCS12_LEN :NativeInt;
+PKCS12 :TBuffer;
 ErrorBuf: PChar;
 begin
 TRY
@@ -322,14 +318,14 @@ TRY
     PEM_To_PKCS12.Password     :=PAnsiChar(Utf8Encode(E_Password2.Text));
     PEM_To_PKCS12.Friendly_Name:=PAnsiChar(Utf8Encode(E_Friendly_Name.Text));
 
-    if not EXECUTE_CONVERT_PEM_To_PKCS12(PEM_To_PKCS12, P_PKCS12, PKCS12_LEN, ErrorBuf) then
+    if not EXECUTE_CONVERT_PEM_To_PKCS12(PEM_To_PKCS12, PKCS12, ErrorBuf) then
      Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
     Else
-     SaveFile(E_Save_PKCS12.Text +'CERT.P12', P_PKCS12, PKCS12_LEN);
+     SaveFile(E_Save_PKCS12.Text +'CERT.P12', PKCS12.Buf, PKCS12.Size);
 
 
   FINALLY
-   Pointer_Free(P_PKCS12, PKCS12_LEN);
+   Pointer_Free(PKCS12.Buf, PKCS12.Size);
    TBuffer_Free(PEM_To_PKCS12.CERT);
    TBuffer_Free(PEM_To_PKCS12.PKEY);
    TBuffer_Free(PEM_To_PKCS12.CA);

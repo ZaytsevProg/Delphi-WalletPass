@@ -80,10 +80,10 @@ uses
   procedure PKPASS_DONE(); stdcall external 'PKPASS.DLL';
 
   function EXECUTE_CREATE_PKPASS(CREATE_PKPASS :PCREATE_PKPASS;
-  Var PKPASS :Pointer; Var PKPASS_LEN :NativeInt; out ErrorBuf: PChar):Boolean; stdcall; external 'PKPASS.DLL';
+  Var PKPASS :TBuffer; out ErrorBuf: PChar):Boolean; stdcall; external 'PKPASS.DLL';
 
   function EXECUTE_CREATE_APN(PKCS12 :PPKCS12;
-  Var APN :Pointer; Var APN_LEN :NativeInt; out ErrorBuf: PChar):Boolean; stdcall; external 'PKPASS.DLL';
+  Var APN :TBuffer; out ErrorBuf: PChar):Boolean; stdcall; external 'PKPASS.DLL';
 
   function EXECUTE_GET_ATTRIBUTES_PKCS12(PKCS12 :PPKCS12;
   CERT_ATTRIBUTES :PTCERT_ATTRIBUTES; out ErrorBuf :PChar):Boolean; stdcall external 'PKPASS.DLL';
@@ -92,10 +92,10 @@ uses
   CERT_ATTRIBUTES :PTCERT_ATTRIBUTES; out ErrorBuf :PChar):Boolean; stdcall external 'PKPASS.DLL';
 
   function EXECUTE_CONVERT_PEM_To_PKCS12(PEM_To_PKCS12 :PPEM_To_PKCS12;
-  Var P_PKCS12 :Pointer; Var PKCS12_LEN :NativeInt; out ErrorBuf :PChar):Boolean; stdcall external 'PKPASS.DLL';
+  Var PKCS12 :TBuffer; out ErrorBuf :PChar):Boolean; stdcall external 'PKPASS.DLL';
 
   function EXECUTE_CREATE_CERT_REQUEST(CREATE_CERT_REQUEST :PCREATE_REQUEST;
-  Var P_REQUEST, P_PKEY :Pointer; Var REQUEST_LEN, PKEY_LEN :NativeInt; Var ErrorBuf :PChar):Boolean; stdcall external 'PKPASS.DLL';
+  Var REQUEST, PKEY :TBuffer; out ErrorBuf :PChar):Boolean; stdcall external 'PKPASS.DLL';
 
   procedure Pointer_Free(Var P :Pointer; LEN :NativeInt); stdcall external 'PKPASS.DLL';
 
