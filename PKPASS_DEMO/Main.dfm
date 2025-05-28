@@ -23,7 +23,7 @@ object FMain: TFMain
     Width = 509
     Height = 924
     Cursor = crHandPoint
-    ActivePage = TAB_PKPASS
+    ActivePage = TAB_CERT_REQUEST
     Align = alClient
     ParentShowHint = False
     ShowHint = False
@@ -746,6 +746,7 @@ object FMain: TFMain
         Width = 241
         Height = 24
         TabOrder = 1
+        Text = 'ZaytsevProg'
       end
       object E_Organization: TEdit
         Left = 158
@@ -767,6 +768,7 @@ object FMain: TFMain
         Width = 241
         Height = 24
         TabOrder = 4
+        Text = 'Moscow'
       end
       object E_State: TEdit
         Left = 158
@@ -774,6 +776,7 @@ object FMain: TFMain
         Width = 241
         Height = 24
         TabOrder = 5
+        Text = 'Moscow'
       end
       object E_Country: TEdit
         Left = 158
@@ -781,6 +784,7 @@ object FMain: TFMain
         Width = 241
         Height = 24
         TabOrder = 6
+        Text = 'RU'
       end
       object E_EmailAddress: TEdit
         Left = 158

@@ -159,8 +159,6 @@ implementation
 
 uses U_PKPASS;
 
-
-
 procedure TFMain.B_CREATE_APNClick(Sender: TObject);
 var
 PKCS12 :PPKCS12;
@@ -168,28 +166,33 @@ APN :Pointer;
 APN_LEN :NativeInt;
 ErrorBuf: PChar;
 begin
-if Length(E_Certificate_PKCS12.Text) = 0 then begin
-Messagedlg('Certificate PKCS12 must be filled.', mterror, [mbNo],0);
-Exit;
+TRY
+  TRY
+    if Length(E_Certificate_PKCS12.Text) = 0 then begin
+     Messagedlg('Certificate PKCS12 must be filled.', mterror, [mbNo],0);
+     Exit;
+    end;
+
+    New(PKCS12);
+    PKCS12.Password:=PAnsiChar(Utf8Encode(E_Password1.Text));
+    LoadFile(E_Certificate_PKCS12.Text, PKCS12.Certificate);
+
+    if not EXECUTE_CREATE_APN(PKCS12, APN, APN_LEN, ErrorBuf) then
+      Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
+    Else
+      SaveFile(E_Save_APN.Text +'APN.PEM', APN, APN_LEN);
+
+  FINALLY
+   Pointer_Free(APN, APN_LEN);
+   TBuffer_Free(PKCS12.Certificate);
+   Dispose(PKCS12);
+  END;
+
+except on e:exception do
+ Messagedlg(e.Message, mterror, [mbNo],0);
 end;
 
-New(PKCS12);
-PKCS12.Password:=PAnsiChar(Utf8Encode(E_Password1.Text));
-LoadFile(E_Certificate_PKCS12.Text, PKCS12.Certificate);
-
-if not EXECUTE_CREATE_APN(PKCS12, APN, APN_LEN, ErrorBuf) then
-Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
-Else begin
-SaveFile(E_Save_APN.Text +'APN.PEM', APN, APN_LEN);
-Pointer_Free(APN, APN_LEN);
 end;
-
-TBuffer_Free(PKCS12.Certificate);
-Dispose(PKCS12);
-end;
-
-
-
 
 procedure TFMain.B_CREATE_CERT_REQUESTClick(Sender: TObject);
 var
@@ -198,34 +201,38 @@ P_REQUEST, P_PKEY :Pointer;
 REQUEST_LEN, PKEY_LEN :NativeInt;
 ErrorBuf: PChar;
 begin
-New(CREATE_REQUEST);
-CREATE_REQUEST.CommonName  :=PAnsiChar(Utf8Encode(E_CommonName.Text));
-CREATE_REQUEST.Organization:=PAnsiChar(Utf8Encode(E_Organization.Text));
-CREATE_REQUEST.OrgUnit     :=PAnsiChar(Utf8Encode(E_OrgUnit.Text));
-CREATE_REQUEST.Locality    :=PAnsiChar(Utf8Encode(E_Locality.Text));
-CREATE_REQUEST.State       :=PAnsiChar(Utf8Encode(E_State.Text));
-CREATE_REQUEST.Country     :=PAnsiChar(Utf8Encode(E_Country.Text));
-CREATE_REQUEST.EmailAddress:=PAnsiChar(Utf8Encode(E_EmailAddress.Text));
-CREATE_REQUEST.Alt_Name    :=PAnsiChar(Utf8Encode(E_Alt_Name.Text));
-CREATE_REQUEST.RSA_BITS    :=CB_RSA_BITS.ItemIndex;
-CREATE_REQUEST.DIGEST_ALG  :=CB_DIGEST_ALG.ItemIndex;
+TRY
+  TRY
+    New(CREATE_REQUEST);
+    CREATE_REQUEST.CommonName  :=PAnsiChar(Utf8Encode(E_CommonName.Text));
+    CREATE_REQUEST.Organization:=PAnsiChar(Utf8Encode(E_Organization.Text));
+    CREATE_REQUEST.OrgUnit     :=PAnsiChar(Utf8Encode(E_OrgUnit.Text));
+    CREATE_REQUEST.Locality    :=PAnsiChar(Utf8Encode(E_Locality.Text));
+    CREATE_REQUEST.State       :=PAnsiChar(Utf8Encode(E_State.Text));
+    CREATE_REQUEST.Country     :=PAnsiChar(Utf8Encode(E_Country.Text));
+    CREATE_REQUEST.EmailAddress:=PAnsiChar(Utf8Encode(E_EmailAddress.Text));
+    CREATE_REQUEST.Alt_Name    :=PAnsiChar(Utf8Encode(E_Alt_Name.Text));
+    CREATE_REQUEST.RSA_BITS    :=CB_RSA_BITS.ItemIndex;
+    CREATE_REQUEST.DIGEST_ALG  :=CB_DIGEST_ALG.ItemIndex;
 
-if not EXECUTE_CREATE_CERT_REQUEST(CREATE_REQUEST, P_REQUEST, P_PKEY, REQUEST_LEN, PKEY_LEN, ErrorBuf) then
-Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
-Else begin
-SaveFile(ExtractFilePath(ParamStr(0)) +'REQUEST.PEM',    P_REQUEST, REQUEST_LEN);
-SaveFile(ExtractFilePath(ParamStr(0)) +'PRIVATEKEY.PEM', P_PKEY,    PKEY_LEN);
+    if not EXECUTE_CREATE_CERT_REQUEST(CREATE_REQUEST, P_REQUEST, P_PKEY, REQUEST_LEN, PKEY_LEN, ErrorBuf) then
+      Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
+    Else begin
+      SaveFile(ExtractFilePath(ParamStr(0)) +'REQUEST.PEM',    P_REQUEST, REQUEST_LEN);
+      SaveFile(ExtractFilePath(ParamStr(0)) +'PRIVATEKEY.PEM', P_PKEY,    PKEY_LEN);
+    end;
 
-Pointer_Free(P_REQUEST, REQUEST_LEN);
-Pointer_Free(P_PKEY,    PKEY_LEN);
+  FINALLY
+   Pointer_Free(P_REQUEST, REQUEST_LEN);
+   Pointer_Free(P_PKEY,    PKEY_LEN);
+   Dispose(CREATE_REQUEST);
+  END;
+
+except on e:exception do
+ Messagedlg(e.Message, mterror, [mbNo],0);
 end;
 
-Dispose(CREATE_REQUEST);
 end;
-
-
-
-
 
 procedure TFMain.B_CREATE_PKPASSClick(Sender: TObject);
 var
@@ -234,61 +241,67 @@ PKPASS :Pointer;
 PKPASS_LEN :NativeInt;
 ErrorBuf: PChar;
 begin
-if Length(E_Pass_Json.Text) = 0 then begin Messagedlg('Pass Json must be filled.', mterror, [mbNo],0); Exit; end;
-if Length(E_PKCS12.Text)    = 0 then begin Messagedlg('Certificate PKCS12 must be filled.', mterror, [mbNo],0); Exit; end;
+TRY
+  TRY
+    if Length(E_Pass_Json.Text) = 0 then begin Messagedlg('Pass Json must be filled.', mterror, [mbNo],0); Exit; end;
+    if Length(E_PKCS12.Text)    = 0 then begin Messagedlg('Certificate PKCS12 must be filled.', mterror, [mbNo],0); Exit; end;
 
-if (CB_WWDR.Checked = False) And (Length(E_WWDR.Text) = 0 ) then begin
-Messagedlg('Certificate WWDR PEM must be filled.', mterror, [mbNo],0);
-Exit;
+    if (CB_WWDR.Checked = False) And (Length(E_WWDR.Text) = 0 ) then begin
+     Messagedlg('Certificate WWDR PEM must be filled.', mterror, [mbNo],0);
+     Exit;
+    end;
+
+    New(CREATE_PKPASS);
+    CREATE_PKPASS.Password:=PAnsiChar(Utf8Encode(E_Password.Text));
+    CREATE_PKPASS.WWDR:=CB_WWDR.Checked;
+
+    LoadFile(E_Pass_Json.Text, CREATE_PKPASS.Pass_Json);
+    LoadFile(E_PKCS12.Text,    CREATE_PKPASS.Certificate_PKCS12);
+    LoadFile(E_WWDR.Text,      CREATE_PKPASS.Certificate_WWDR);
+
+    LoadFile(E_background.Text,   CREATE_PKPASS.background);
+    LoadFile(E_background2x.Text, CREATE_PKPASS.background2x);
+    LoadFile(E_icon.Text,         CREATE_PKPASS.icon);
+    LoadFile(E_icon2x.Text,       CREATE_PKPASS.icon2x);
+    LoadFile(E_icon3x.Text,       CREATE_PKPASS.icon3x);
+    LoadFile(E_logo.Text,         CREATE_PKPASS.logo);
+    LoadFile(E_logo2x.Text,       CREATE_PKPASS.logo2x);
+    LoadFile(E_strip.Text,        CREATE_PKPASS.strip);
+    LoadFile(E_strip2x.Text,      CREATE_PKPASS.strip2x);
+    LoadFile(E_thumbnail.Text,    CREATE_PKPASS.thumbnail);
+    LoadFile(E_thumbnail2x.Text,  CREATE_PKPASS.thumbnail2x);
+
+
+    if not EXECUTE_CREATE_PKPASS(CREATE_PKPASS, PKPASS, PKPASS_LEN, ErrorBuf) then
+     Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
+    Else
+     SaveFile(ExtractFilePath(ParamStr(0)) +'PKPASS_DEMO.pkpass', PKPASS, PKPASS_LEN);
+
+
+  FINALLY
+    Pointer_Free(PKPASS, PKPASS_LEN);
+    TBuffer_Free(CREATE_PKPASS.Pass_Json);
+    TBuffer_Free(CREATE_PKPASS.Certificate_PKCS12);
+    TBuffer_Free(CREATE_PKPASS.Certificate_WWDR);
+    TBuffer_Free(CREATE_PKPASS.background);
+    TBuffer_Free(CREATE_PKPASS.background2x);
+    TBuffer_Free(CREATE_PKPASS.icon);
+    TBuffer_Free(CREATE_PKPASS.icon2x);
+    TBuffer_Free(CREATE_PKPASS.icon3x);
+    TBuffer_Free(CREATE_PKPASS.logo);
+    TBuffer_Free(CREATE_PKPASS.logo2x);
+    TBuffer_Free(CREATE_PKPASS.strip);
+    TBuffer_Free(CREATE_PKPASS.strip2x);
+    TBuffer_Free(CREATE_PKPASS.thumbnail);
+    TBuffer_Free(CREATE_PKPASS.thumbnail2x);
+    Dispose(CREATE_PKPASS);
+  END;
+
+except on e:exception do
+ Messagedlg(e.Message, mterror, [mbNo],0);
 end;
 
-New(CREATE_PKPASS);
-CREATE_PKPASS.Password:=PAnsiChar(Utf8Encode(E_Password.Text));
-CREATE_PKPASS.WWDR:=CB_WWDR.Checked;
-
-LoadFile(E_Pass_Json.Text, CREATE_PKPASS.Pass_Json);
-LoadFile(E_PKCS12.Text,    CREATE_PKPASS.Certificate_PKCS12);
-LoadFile(E_WWDR.Text,      CREATE_PKPASS.Certificate_WWDR);
-
-LoadFile(E_background.Text,   CREATE_PKPASS.background);
-LoadFile(E_background2x.Text, CREATE_PKPASS.background2x);
-LoadFile(E_icon.Text,         CREATE_PKPASS.icon);
-LoadFile(E_icon2x.Text,       CREATE_PKPASS.icon2x);
-LoadFile(E_icon3x.Text,       CREATE_PKPASS.icon3x);
-LoadFile(E_logo.Text,         CREATE_PKPASS.logo);
-LoadFile(E_logo2x.Text,       CREATE_PKPASS.logo2x);
-LoadFile(E_strip.Text,        CREATE_PKPASS.strip);
-LoadFile(E_strip2x.Text,      CREATE_PKPASS.strip2x);
-LoadFile(E_thumbnail.Text,    CREATE_PKPASS.thumbnail);
-LoadFile(E_thumbnail2x.Text,  CREATE_PKPASS.thumbnail2x);
-
-
-if not EXECUTE_CREATE_PKPASS(CREATE_PKPASS, PKPASS, PKPASS_LEN, ErrorBuf) then
-Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
-Else begin
-SaveFile(ExtractFilePath(ParamStr(0)) +'PKPASS_DEMO.pkpass', PKPASS, PKPASS_LEN);
-Pointer_Free(PKPASS, PKPASS_LEN);
 end;
-
-
-TBuffer_Free(CREATE_PKPASS.Pass_Json);
-TBuffer_Free(CREATE_PKPASS.Certificate_PKCS12);
-TBuffer_Free(CREATE_PKPASS.Certificate_WWDR);
-TBuffer_Free(CREATE_PKPASS.background);
-TBuffer_Free(CREATE_PKPASS.background2x);
-TBuffer_Free(CREATE_PKPASS.icon);
-TBuffer_Free(CREATE_PKPASS.icon2x);
-TBuffer_Free(CREATE_PKPASS.icon3x);
-TBuffer_Free(CREATE_PKPASS.logo);
-TBuffer_Free(CREATE_PKPASS.logo2x);
-TBuffer_Free(CREATE_PKPASS.strip);
-TBuffer_Free(CREATE_PKPASS.strip2x);
-TBuffer_Free(CREATE_PKPASS.thumbnail);
-TBuffer_Free(CREATE_PKPASS.thumbnail2x);
-Dispose(CREATE_PKPASS);
-end;
-
-
 
 procedure TFMain.B_CONVERT_PEM_To_PKCS12Click(Sender: TObject);
 var
@@ -297,31 +310,37 @@ P_PKCS12 :Pointer;
 PKCS12_LEN :NativeInt;
 ErrorBuf: PChar;
 begin
-if Length(E_Certificate.Text) = 0 then begin Messagedlg('Certificate must be filled.', mterror, [mbNo],0); Exit; end;
-if Length(E_PrivateKey.Text)  = 0 then begin Messagedlg('Private Key must be filled.', mterror, [mbNo],0); Exit; end;
+TRY
+  TRY
+    if Length(E_Certificate.Text) = 0 then begin Messagedlg('Certificate must be filled.', mterror, [mbNo],0); Exit; end;
+    if Length(E_PrivateKey.Text)  = 0 then begin Messagedlg('Private Key must be filled.', mterror, [mbNo],0); Exit; end;
 
-New(PEM_To_PKCS12);
-LoadFile(E_Certificate.Text, PEM_To_PKCS12.CERT);
-LoadFile(E_PrivateKey.Text,  PEM_To_PKCS12.PKEY);
-LoadFile(E_CERT_CA.Text,     PEM_To_PKCS12.CA);
-PEM_To_PKCS12.Password     :=PAnsiChar(Utf8Encode(E_Password2.Text));
-PEM_To_PKCS12.Friendly_Name:=PAnsiChar(Utf8Encode(E_Friendly_Name.Text));
+    New(PEM_To_PKCS12);
+    LoadFile(E_Certificate.Text, PEM_To_PKCS12.CERT);
+    LoadFile(E_PrivateKey.Text,  PEM_To_PKCS12.PKEY);
+    LoadFile(E_CERT_CA.Text,     PEM_To_PKCS12.CA);
+    PEM_To_PKCS12.Password     :=PAnsiChar(Utf8Encode(E_Password2.Text));
+    PEM_To_PKCS12.Friendly_Name:=PAnsiChar(Utf8Encode(E_Friendly_Name.Text));
 
-if not EXECUTE_CONVERT_PEM_To_PKCS12(PEM_To_PKCS12, P_PKCS12, PKCS12_LEN, ErrorBuf) then
-Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
-Else begin
-SaveFile(E_Save_PKCS12.Text +'CERT.P12', P_PKCS12, PKCS12_LEN);
-Pointer_Free(P_PKCS12, PKCS12_LEN);
+    if not EXECUTE_CONVERT_PEM_To_PKCS12(PEM_To_PKCS12, P_PKCS12, PKCS12_LEN, ErrorBuf) then
+     Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
+    Else
+     SaveFile(E_Save_PKCS12.Text +'CERT.P12', P_PKCS12, PKCS12_LEN);
+
+
+  FINALLY
+   Pointer_Free(P_PKCS12, PKCS12_LEN);
+   TBuffer_Free(PEM_To_PKCS12.CERT);
+   TBuffer_Free(PEM_To_PKCS12.PKEY);
+   TBuffer_Free(PEM_To_PKCS12.CA);
+   Dispose(PEM_To_PKCS12);
+  END;
+
+except on e:exception do
+ Messagedlg(e.Message, mterror, [mbNo],0);
 end;
 
-TBuffer_Free(PEM_To_PKCS12.CERT);
-TBuffer_Free(PEM_To_PKCS12.PKEY);
-TBuffer_Free(PEM_To_PKCS12.CA);
-Dispose(PEM_To_PKCS12);
 end;
-
-
-
 
 procedure TFMain.B_GET_ATTRIBUTES_PEMClick(Sender: TObject);
 var
@@ -329,32 +348,40 @@ PEM :TBuffer;
 CERT_ATTRIBUTES :TCERT_ATTRIBUTES;
 ErrorBuf: PChar;
 begin
-M_CERT_ATTRIBUTES.Clear;
-if Length(E_CERT_PEM.Text) = 0 then begin
-Messagedlg('Certificate PEM must be filled.', mterror, [mbNo],0);
-Exit;
+TRY
+  TRY
+    M_CERT_ATTRIBUTES.Clear;
+
+    if Length(E_CERT_PEM.Text) = 0 then begin
+     Messagedlg('Certificate PEM must be filled.', mterror, [mbNo],0);
+     Exit;
+    end;
+
+    ZeroMemory(@CERT_ATTRIBUTES, SizeOf(TCERT_ATTRIBUTES));
+    LoadFile(E_CERT_PEM.Text, PEM);
+
+    if not EXECUTE_GET_ATTRIBUTES_PEM(@PEM, @CERT_ATTRIBUTES, ErrorBuf) then
+      Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
+    Else begin
+      M_CERT_ATTRIBUTES.Lines.Add('SUBJECT: '   +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.SUBJECT)));
+      M_CERT_ATTRIBUTES.Lines.Add('ISSUER: '    +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.ISSUER)));
+      M_CERT_ATTRIBUTES.Lines.Add('SN: '        +PAnsiChar(CERT_ATTRIBUTES.SN));
+      M_CERT_ATTRIBUTES.Lines.Add('DT_BEFORE: ' +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_BEFORE)));
+      M_CERT_ATTRIBUTES.Lines.Add('DT_AFTER: '  +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_AFTER)));
+    end;
+
+
+  FINALLY
+   TBuffer_Free(PEM);
+   Pointer_Free(CERT_ATTRIBUTES.SUBJECT.Buf, CERT_ATTRIBUTES.SUBJECT.Size);
+   Pointer_Free(CERT_ATTRIBUTES.ISSUER.Buf,  CERT_ATTRIBUTES.ISSUER.Size);
+  END;
+
+except on e:exception do
+ Messagedlg(e.Message, mterror, [mbNo],0);
 end;
 
-ZeroMemory(@CERT_ATTRIBUTES, SizeOf(TCERT_ATTRIBUTES));
-LoadFile(E_CERT_PEM.Text, PEM);
-
-if not EXECUTE_GET_ATTRIBUTES_PEM(@PEM, @CERT_ATTRIBUTES, ErrorBuf) then
-Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
-Else begin
-M_CERT_ATTRIBUTES.Lines.Add('SUBJECT: '   +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.SUBJECT)));
-M_CERT_ATTRIBUTES.Lines.Add('ISSUER: '    +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.ISSUER)));
-M_CERT_ATTRIBUTES.Lines.Add('SN: '        +PAnsiChar(CERT_ATTRIBUTES.SN));
-M_CERT_ATTRIBUTES.Lines.Add('DT_BEFORE: ' +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_BEFORE)));
-M_CERT_ATTRIBUTES.Lines.Add('DT_AFTER: '  +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_AFTER)));
-Pointer_Free(CERT_ATTRIBUTES.SUBJECT.Buf, CERT_ATTRIBUTES.SUBJECT.Size);
-Pointer_Free(CERT_ATTRIBUTES.ISSUER.Buf,  CERT_ATTRIBUTES.ISSUER.Size);
 end;
-
-TBuffer_Free(PEM);
-end;
-
-
-
 
 procedure TFMain.B_GET_ATTRIBUTES_PKCS12Click(Sender: TObject);
 var
@@ -362,47 +389,54 @@ PKCS12 :PPKCS12;
 CERT_ATTRIBUTES :TCERT_ATTRIBUTES;
 ErrorBuf: PChar;
 begin
-M_CERT_ATTRIBUTES.Clear;
-if Length(E_Certificate_PKCS12.Text) = 0 then begin
-Messagedlg('Certificate PKCS12 must be filled.', mterror, [mbNo],0);
-Exit;
+TRY
+  TRY
+    M_CERT_ATTRIBUTES.Clear;
+    if Length(E_Certificate_PKCS12.Text) = 0 then begin
+     Messagedlg('Certificate PKCS12 must be filled.', mterror, [mbNo],0);
+     Exit;
+    end;
+
+    New(PKCS12);
+    ZeroMemory(@CERT_ATTRIBUTES, SizeOf(TCERT_ATTRIBUTES));
+
+    PKCS12.Password:=PAnsiChar(Utf8Encode(E_Password1.Text));
+    LoadFile(E_Certificate_PKCS12.Text, PKCS12.Certificate);
+
+    if not EXECUTE_GET_ATTRIBUTES_PKCS12(PKCS12, @CERT_ATTRIBUTES, ErrorBuf) then
+     Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
+    Else begin
+      M_CERT_ATTRIBUTES.Lines.Add('SUBJECT: '   +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.SUBJECT)));
+      M_CERT_ATTRIBUTES.Lines.Add('ISSUER: '    +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.ISSUER)));
+      M_CERT_ATTRIBUTES.Lines.Add('SN: '        +PAnsiChar(CERT_ATTRIBUTES.SN));
+      M_CERT_ATTRIBUTES.Lines.Add('DT_BEFORE: ' +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_BEFORE)));
+      M_CERT_ATTRIBUTES.Lines.Add('DT_AFTER: '  +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_AFTER)));
+
+      if CERT_ATTRIBUTES.CERT_CA then begin
+        M_CERT_ATTRIBUTES.Lines.Add('');
+        M_CERT_ATTRIBUTES.Lines.Add('CA_SUBJECT: '   +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.CA_SUBJECT)));
+        M_CERT_ATTRIBUTES.Lines.Add('CA_ISSUER: '    +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.CA_ISSUER)));
+        M_CERT_ATTRIBUTES.Lines.Add('CA_SN: '        +PAnsiChar(CERT_ATTRIBUTES.CA_SN));
+        M_CERT_ATTRIBUTES.Lines.Add('CA_DT_BEFORE: ' +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.CA_DT_BEFORE)));
+        M_CERT_ATTRIBUTES.Lines.Add('CA_DT_AFTER: '  +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.CA_DT_AFTER)));
+      end;
+
+    end;
+
+  FINALLY
+   Pointer_Free(CERT_ATTRIBUTES.SUBJECT.Buf, CERT_ATTRIBUTES.SUBJECT.Size);
+   Pointer_Free(CERT_ATTRIBUTES.ISSUER.Buf,  CERT_ATTRIBUTES.ISSUER.Size);
+   Pointer_Free(CERT_ATTRIBUTES.CA_SUBJECT.Buf, CERT_ATTRIBUTES.CA_SUBJECT.Size);
+   Pointer_Free(CERT_ATTRIBUTES.CA_ISSUER.Buf,  CERT_ATTRIBUTES.CA_ISSUER.Size);
+   TBuffer_Free(PKCS12.Certificate);
+   Dispose(PKCS12);
+  END;
+
+except on e:exception do
+ Messagedlg(e.Message, mterror, [mbNo],0);
 end;
 
-New(PKCS12);
-ZeroMemory(@CERT_ATTRIBUTES, SizeOf(TCERT_ATTRIBUTES));
-
-PKCS12.Password:=PAnsiChar(Utf8Encode(E_Password1.Text));
-LoadFile(E_Certificate_PKCS12.Text, PKCS12.Certificate);
-
-if not EXECUTE_GET_ATTRIBUTES_PKCS12(PKCS12, @CERT_ATTRIBUTES, ErrorBuf) then
-Messagedlg(StrPas(ErrorBuf), mterror, [mbNo],0)
-Else begin
-M_CERT_ATTRIBUTES.Lines.Add('SUBJECT: '   +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.SUBJECT)));
-M_CERT_ATTRIBUTES.Lines.Add('ISSUER: '    +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.ISSUER)));
-M_CERT_ATTRIBUTES.Lines.Add('SN: '        +PAnsiChar(CERT_ATTRIBUTES.SN));
-M_CERT_ATTRIBUTES.Lines.Add('DT_BEFORE: ' +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_BEFORE)));
-M_CERT_ATTRIBUTES.Lines.Add('DT_AFTER: '  +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.DT_AFTER)));
-Pointer_Free(CERT_ATTRIBUTES.SUBJECT.Buf, CERT_ATTRIBUTES.SUBJECT.Size);
-Pointer_Free(CERT_ATTRIBUTES.ISSUER.Buf,  CERT_ATTRIBUTES.ISSUER.Size);
-
-if CERT_ATTRIBUTES.CERT_CA then begin
-M_CERT_ATTRIBUTES.Lines.Add('');
-M_CERT_ATTRIBUTES.Lines.Add('CA_SUBJECT: '   +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.CA_SUBJECT)));
-M_CERT_ATTRIBUTES.Lines.Add('CA_ISSUER: '    +PAnsiChar(TBufferToString(CERT_ATTRIBUTES.CA_ISSUER)));
-M_CERT_ATTRIBUTES.Lines.Add('CA_SN: '        +PAnsiChar(CERT_ATTRIBUTES.CA_SN));
-M_CERT_ATTRIBUTES.Lines.Add('CA_DT_BEFORE: ' +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.CA_DT_BEFORE)));
-M_CERT_ATTRIBUTES.Lines.Add('CA_DT_AFTER: '  +FormatDateTime('dd.mm.yyyy hh:mm:ss', UDT_ToDateTime(CERT_ATTRIBUTES.CA_DT_AFTER)));
-Pointer_Free(CERT_ATTRIBUTES.CA_SUBJECT.Buf, CERT_ATTRIBUTES.CA_SUBJECT.Size);
-Pointer_Free(CERT_ATTRIBUTES.CA_ISSUER.Buf,  CERT_ATTRIBUTES.CA_ISSUER.Size);
 end;
-
-end;
-
-TBuffer_Free(PKCS12.Certificate);
-Dispose(PKCS12);
-end;
-
-
 
 procedure TFMain.CB_WWDRClick(Sender: TObject);
 begin
@@ -532,7 +566,6 @@ begin
 E_WWDR.Text:= SelectFile('WWDR (pem)', 'Certificate files (pem)|*.pem|All files|*.*');
 end;
 
-
 function TFMain.SelectDir(Const Caption :String):String;
 var
   Dir :String;
@@ -559,8 +592,6 @@ except on E:Exception do
 if Assigned(Dialog) then Dialog.Free;
 End;
 end;
-
-
 
 
 Initialization
