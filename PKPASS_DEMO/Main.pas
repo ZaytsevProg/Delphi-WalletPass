@@ -196,7 +196,7 @@ end;
 procedure TFMain.B_CREATE_CERT_REQUESTClick(Sender: TObject);
 var
 CREATE_REQUEST :PCREATE_REQUEST;
-Var REQUEST, PKEY :TBuffer;
+REQUEST, PKEY :TBuffer;
 ErrorBuf: PChar;
 begin
 TRY
